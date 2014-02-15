@@ -16,8 +16,21 @@
 
 module Solve where
 
+-- search: Approximate the root of a function given a starting point
+--         and an increment
 search :: (Enum a, Num a, Num b, Ord b) => (a -> b) -> a -> a -> (a, a)
 search func start inc =
-  head [(a, b) | (a, b) <- zip vals (tail vals), (func a * func b) <= 0]
+  head [(a, b) | (a, b) <- zip vals (tail vals), func a * func b <= 0]
     where
       vals = [start, start + inc ..]
+
+-- bisection: Calculate the root of a function given a starting range,
+--            and a required accuracy
+bisection :: (Fractional a, Ord a, Num b, Ord b) => (a-> b) -> (a, a) -> a -> a
+bisection func (low, high) epsilon
+  | abs (high - low) < epsilon = mid
+  | otherwise = if func low * func mid <= 0
+                  then bisection func (low, mid) epsilon
+                  else bisection func (mid, high) epsilon
+    where
+      mid = (high + low) / 2

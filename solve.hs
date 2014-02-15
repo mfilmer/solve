@@ -15,6 +15,7 @@
 --  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 module Solve where
+import Debug.Trace
 
 -- search: Approximate the root of a function given a starting point
 --         and an increment
@@ -24,13 +25,21 @@ search func start inc =
     where
       vals = [start, start + inc ..]
 
--- bisection: Calculate the root of a function given a starting range,
---            and a required accuracy
-bisection :: (Fractional a, Ord a, Num b, Ord b) => (a-> b) -> (a, a) -> a -> a
-bisection func (low, high) epsilon
-  | abs (high - low) < epsilon = mid
+-- bisection: Calculate the root of a function given a starting range
+bisection :: (Fractional a, Ord a, Num b, Ord b) => (a-> b) -> (a, a) -> a
+bisection func (low, high)
+  | abs (high - low) < abs (1e-14 * mid) = mid
   | otherwise = if func low * func mid <= 0
-                  then bisection func (low, mid) epsilon
-                  else bisection func (mid, high) epsilon
+                  then bisection func (low, mid)
+                  else bisection func (mid, high)
     where
       mid = (high + low) / 2
+
+secant :: (Num a) => (a -> a) -> (a, a) -> a
+secant func (low, high) = undefined
+
+falsePosition :: (Num a) => (a -> a) -> (a, a) -> a
+falsePosition func (low, high) = undefined
+
+ridder :: (Num a) => (a -> a) -> (a, a) -> a
+ridder func (low, high) = undefined

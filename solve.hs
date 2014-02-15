@@ -41,5 +41,21 @@ secant func (low, high) = undefined
 falsePosition :: (Num a) => (a -> a) -> (a, a) -> a
 falsePosition func (low, high) = undefined
 
-ridder :: (Num a) => (a -> a) -> (a, a) -> a
-ridder func (low, high) = undefined
+--ridder :: (Floating a, Ord a) => (a -> a) -> (a, a) -> a
+ridder func (low, high)
+  | abs (high - low) < abs (1e-14 * mid) = mid
+  | otherwise = if midV * rootV < 0
+                  then trace ("a: " ++ show low) $ ridder func (mid, root)
+                  else
+                    if lowV * rootV < 0
+                      then trace ("b: " ++ show low) $ ridder func (low, root)
+                      else trace ("c: " ++ show low) $ ridder func (root, high)
+    where
+      mid = (high + low) / 2
+      lowV = func low
+      midV = func mid
+      highV = func high
+      rootV = func root
+      root
+        | lowV > highV = mid + (mid - low) * midV / sqrt (midV**2 - lowV*highV)
+        | otherwise = mid - (mid - low) * midV / sqrt (midV**2 - lowV*highV)

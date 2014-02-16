@@ -15,7 +15,6 @@
 --  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 module Solve where
-import Debug.Trace
 
 -- search: Approximate the root of a function given a starting point
 --         and an increment
@@ -44,12 +43,12 @@ falsePosition func (low, high) = undefined
 --ridder :: (Floating a, Ord a) => (a -> a) -> (a, a) -> a
 ridder func (low, high)
   | abs (high - low) < abs (1e-14 * mid) = mid
-  | otherwise = if midV * rootV < 0
-                  then trace ("a: " ++ show low) $ ridder func (mid, root)
+  | otherwise = if midV * rootV <= 0
+                  then ridder func (mid, root)
                   else
                     if lowV * rootV < 0
-                      then trace ("b: " ++ show low) $ ridder func (low, root)
-                      else trace ("c: " ++ show low) $ ridder func (root, high)
+                      then ridder func (low, root)
+                      else ridder func (root, high)
     where
       mid = (high + low) / 2
       lowV = func low

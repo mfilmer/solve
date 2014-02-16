@@ -34,15 +34,9 @@ bisection func (low, high)
     where
       mid = (high + low) / 2
 
-secant :: (Num a) => (a -> a) -> (a, a) -> a
-secant func (low, high) = undefined
-
-falsePosition :: (Num a) => (a -> a) -> (a, a) -> a
-falsePosition func (low, high) = undefined
-
 ridder :: (Floating a, Ord a) => (a -> a) -> (a, a) -> a
 ridder func (low, high)
-  | abs (high - low) < abs (1e-14 * mid) = mid
+  | abs (high - low) < precision = mid
   | otherwise = if midV * rootV <= 0
                   then ridder func (mid, root)
                   else
@@ -58,6 +52,7 @@ ridder func (low, high)
       root
         | lowV > highV = mid + (mid - low) * midV / sqrt (midV**2 - lowV*highV)
         | otherwise = mid - (mid - low) * midV / sqrt (midV**2 - lowV*highV)
+      precision = max (abs mid * 1e-14) 1e-14
 
 -- Numerically calculate the derivative of a function at a point
 numDeriv :: (Fractional a, Ord a) => (a -> a) -> a -> a

@@ -40,7 +40,7 @@ secant func (low, high) = undefined
 falsePosition :: (Num a) => (a -> a) -> (a, a) -> a
 falsePosition func (low, high) = undefined
 
---ridder :: (Floating a, Ord a) => (a -> a) -> (a, a) -> a
+ridder :: (Floating a, Ord a) => (a -> a) -> (a, a) -> a
 ridder func (low, high)
   | abs (high - low) < abs (1e-14 * mid) = mid
   | otherwise = if midV * rootV <= 0
@@ -58,3 +58,9 @@ ridder func (low, high)
       root
         | lowV > highV = mid + (mid - low) * midV / sqrt (midV**2 - lowV*highV)
         | otherwise = mid - (mid - low) * midV / sqrt (midV**2 - lowV*highV)
+
+-- Numerically calculate the derivative of a function at a point
+numDeriv :: (Fractional a, Ord a) => (a -> a) -> a -> a
+numDeriv func x = (func (x + dx) - func (x - dx)) / (2 * dx)
+  where
+    dx = max 1e-14 (abs x * 1e-14)

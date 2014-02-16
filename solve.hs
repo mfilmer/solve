@@ -14,7 +14,7 @@
 --  You should have received a copy of the GNU General Public License
 --  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-module Solve where
+module Solve (search, bisection, ridder, newton, simpNewton, numDeriv) where
 
 -- search: Approximate the root of a function given a starting point
 --         and an increment
@@ -53,6 +53,17 @@ ridder func (low, high)
         | lowV > highV = mid + (mid - low) * midV / sqrt (midV**2 - lowV*highV)
         | otherwise = mid - (mid - low) * midV / sqrt (midV**2 - lowV*highV)
       precision = max (abs mid * 1e-14) 1e-14
+
+simpNewton :: (Fractional a, Ord a) => (a -> a) -> a -> Int -> a
+simpNewton func guess n = iterate (newton' func deriv) guess !! (n - 1)
+  where
+    deriv = numDeriv func
+
+newton :: (Fractional a) => (a -> a) -> (a -> a) -> a -> Int -> a
+newton func deriv guess n = iterate (newton' func deriv) guess !! (n - 1)
+
+newton' :: (Fractional a) => (a -> a) -> (a -> a) ->  a -> a
+newton' func deriv guess = guess - ((func guess) / (deriv guess))
 
 -- Numerically calculate the derivative of a function at a point
 numDeriv :: (Fractional a, Ord a) => (a -> a) -> a -> a

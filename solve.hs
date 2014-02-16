@@ -55,9 +55,7 @@ ridder func (low, high)
       precision = max (abs mid * 1e-14) 1e-14
 
 simpNewton :: (Fractional a, Ord a) => (a -> a) -> a -> Int -> a
-simpNewton func guess n = iterate (newton' func deriv) guess !! (n - 1)
-  where
-    deriv = numDeriv func
+simpNewton func guess n = newton func (numDeriv func) guess n
 
 newton :: (Fractional a) => (a -> a) -> (a -> a) -> a -> Int -> a
 newton func deriv guess n = iterate (newton' func deriv) guess !! (n - 1)

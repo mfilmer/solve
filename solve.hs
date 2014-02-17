@@ -54,11 +54,21 @@ ridder func (low, high)
         | otherwise = mid - (mid - low) * midV / sqrt (midV**2 - lowV*highV)
       precision = max (abs mid * 1e-14) 1e-14
 
-simpNewton :: (Fractional a, Ord a) => (a -> a) -> a -> Int -> a
-simpNewton func guess n = newton func (numDeriv func) guess n
+-- Find a root using Newton's Method, iterating until the root doesn't change
+fullNewton :: (Eq a, Fractional a) => (a -> a) -> (a -> a) -> a -> a
+fullNewton func deriv guess = approxs !! final
+  where
+    approxs = iterate (newton' func deriv) guess
+    final = length $ takeWhile (\(x, y) -> x /= y) (zip approxs (tail approxs))
+
+simpFullNewton :: (Fractional a, Ord a) => (a -> a) -> a -> a
+simpFullNewton func guess = fullNewton func (numDeriv func) guess
 
 newton :: (Fractional a) => (a -> a) -> (a -> a) -> a -> Int -> a
 newton func deriv guess n = iterate (newton' func deriv) guess !! (n - 1)
+
+simpNewton :: (Fractional a, Ord a) => (a -> a) -> a -> Int -> a
+simpNewton func guess n = newton func (numDeriv func) guess n
 
 newton' :: (Fractional a) => (a -> a) -> (a -> a) ->  a -> a
 newton' func deriv guess = guess - ((func guess) / (deriv guess))
@@ -67,4 +77,4 @@ newton' func deriv guess = guess - ((func guess) / (deriv guess))
 numDeriv :: (Fractional a, Ord a) => (a -> a) -> a -> a
 numDeriv func x = (func (x + dx) - func (x - dx)) / (2 * dx)
   where
-    dx = max 1e-14 (abs x * 1e-14)
+    dx = max 1e-10 (abs x * 1e-10)

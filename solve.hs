@@ -86,6 +86,11 @@ numDeriv func x = (func (x + dx) - func (x - dx)) / (2 * dx)
   where
     dx = max 1e-10 (abs x * 1e-10)
 
+-- Automatically differentiate (implementation below)
+autoDeriv :: Num a => (D a -> D a) -> a -> a
+autoDeriv func x = deriv
+  where (D _ deriv) = func (D x 1)
+
 -- Implement Automatic Differentiation
 -- From: http://conal.net/blog/posts/what-is-automatic-differentiation-and-why-does-it-work
 data D a = D a a deriving (Eq,Show)
@@ -114,3 +119,10 @@ instance Floating x => Floating (D x) where
   cos    (D x x') = D (cos    x) (x' * (- sin x))
   asin   (D x x') = D (asin   x) (x' / sqrt (1 - sqr x))
   acos   (D x x') = D (acos   x) (x' / (-  sqrt (1 - sqr x)))
+  atan   (D x x') = D (atan   x) (x' / (sqr x + 1))
+  sinh   (D x x') = D (sinh   x) (x' * cosh x)
+  cosh   (D x x') = D (cosh   x) (x' * sinh x)
+  asinh  (D x x') = D (asinh  x) (x' / sqrt (sqr x + 1))
+  atanh  (D x x') = D (atanh  x) (x' / (1 - sqr x))
+  acosh  (D x x') = D (acosh  x) (x' / sqrt ((x - 1)*(x + 1)))
+

@@ -87,46 +87,14 @@ numDeriv func x = (func (x + dx) - func (x - dx)) / (2 * dx)
     dx = max 1e-10 (abs x * 1e-10)
 
 -- Automatically differentiate (implementation below)
---autoDeriv :: Num a => (D a -> D a) -> a -> a
---autoDeriv func x = deriv
-  --where (D _ deriv) = func (D x 1)
+autoDeriv :: Num a => (D a -> D a) -> a -> a
+autoDeriv = autoDerivN 1
 
-{-
--- Implement Automatic Differentiation
--- From: http://conal.net/blog/posts/what-is-automatic-differentiation-and-why-does-it-work
-data D a = D a a deriving (Eq,Show)
-
-instance Num a => Num (D a) where
-  D x x' + D y y' = D (x+y) (x'+y')
-  D x x' * D y y' = D (x*y) (y'*x + x'*y)
-  fromInteger x   = D (fromInteger x) 0
-  negate (D x x') = D (negate x) (negate x')
-  signum (D x _ ) = D (signum x) 0
-  abs    (D x x') = D (abs x) (x' * signum x)
-
-instance Fractional x => Fractional (D x) where
-  fromRational x  = D (fromRational x) 0
-  recip  (D x x') = D (recip x) (- x' / sqr x)
-
-sqr :: Num a => a -> a
-sqr x = x * x
-
-instance Floating x => Floating (D x) where
-  pi              = D pi 0
-  exp    (D x x') = D (exp    x) (x' * exp x)
-  log    (D x x') = D (log    x) (x' / x)
-  sqrt   (D x x') = D (sqrt   x) (x' / (2 * sqrt x))
-  sin    (D x x') = D (sin    x) (x' * cos x)
-  cos    (D x x') = D (cos    x) (x' * (- sin x))
-  asin   (D x x') = D (asin   x) (x' / sqrt (1 - sqr x))
-  acos   (D x x') = D (acos   x) (x' / (-  sqrt (1 - sqr x)))
-  atan   (D x x') = D (atan   x) (x' / (sqr x + 1))
-  sinh   (D x x') = D (sinh   x) (x' * cosh x)
-  cosh   (D x x') = D (cosh   x) (x' * sinh x)
-  asinh  (D x x') = D (asinh  x) (x' / sqrt (sqr x + 1))
-  atanh  (D x x') = D (atanh  x) (x' / (1 - sqr x))
-  acosh  (D x x') = D (acosh  x) (x' / sqrt ((x - 1)*(x + 1)))
--}
+autoDerivN :: Num a => Int -> (D a -> D a) -> a -> a
+autoDerivN n func x = getNthDeriv n (func (D x 1))
+  where
+    getNthDeriv 0 (D x _) = x
+    getNthDeriv n (D _ x') = getNthDeriv (n - 1) x'
 
 -- Implementation of Automatic Differentiation for an unlimited number of
 -- derivitives
@@ -174,5 +142,5 @@ instance Floating a => Floating (Deriv a) where
   sinh    = chain sinh cosh
   cosh    = chain cosh sinh
   asinh   = chain asinh (\x -> recip (sqrt (sqr x + 1)))
-  acosh   = chain acosh (\x -> - recip (sqrt (sqr x - 1)))
+  acosh   = chain acosh (\x -> recip (sqrt (sqr x - 1)))
   atanh   = chain atanh (\x -> recip (1 - sqr x))

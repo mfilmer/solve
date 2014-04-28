@@ -87,14 +87,30 @@ numDeriv func x = (func (x + dx) - func (x - dx)) / (2 * dx)
     dx = max 1e-10 (abs x * 1e-10)
 
 -- Automatically differentiate (implementation below)
-autoDeriv :: Num a => (D a -> D a) -> a -> a
+
+-- Derivative of an input value
+dx x = D x (dConst 1)
+
+-- First derivative
+autoDeriv :: Num a => (Deriv a -> Deriv a) -> a -> a
 autoDeriv = autoDerivN 1
 
-autoDerivN :: Num a => Int -> (D a -> D a) -> a -> a
-autoDerivN n func x = getNthDeriv n (func (D x 1))
+-- Nth derivative
+autoDerivN :: Num a => Int -> (Deriv a -> Deriv a) -> a -> a
+autoDerivN n func x = getNthDeriv n (func (dx x))
   where
     getNthDeriv 0 (D x _) = x
     getNthDeriv n (D _ x') = getNthDeriv (n - 1) x'
+
+-- List of derivative values
+autoDerivAll :: Num a => (Deriv a -> Deriv a) -> a -> [a]
+autoDerivAll func x = l (func (dx x)) where l (D a0 a') = a0:l a'
+
+-- List of derivative functions
+--allAutoDeriv :: Num a => (Deriv a -> Deriv a) -> [Deriv a -> Deriv a]
+--allAutoDeriv func = l where l = l:allAutoDeriv l
+--allAutoDeriv func = l:autoDeriv l where l = autoDeriv func
+--allAutoDeriv func = ad:allAutoDeriv ad where ad = autoDeriv func
 
 -- Implementation of Automatic Differentiation for an unlimited number of
 -- derivitives
@@ -144,3 +160,6 @@ instance Floating a => Floating (Deriv a) where
   asinh   = chain asinh (\x -> recip (sqrt (sqr x + 1)))
   acosh   = chain acosh (\x -> recip (sqrt (sqr x - 1)))
   atanh   = chain atanh (\x -> recip (1 - sqr x))
+
+instance Show a => Show (Deriv a) where
+  show (D a (D b _)) = "D " ++ show a ++ " (D " ++ show b ++ " (D ...))"
